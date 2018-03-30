@@ -1,1 +1,3 @@
-# DearbornRTOS
+# DearbornRTOS 
+
+The Dearborn Difference RTOS
