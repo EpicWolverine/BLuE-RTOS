@@ -28,18 +28,41 @@
 
 //#define FAULT_SYSTICK           15          // System Tick
 #define MAX_TASKS 20
+#define STACK_BASE  0x20000000
+int numTasks=0;
 
+//Global and OS System Types/Functions
 typedef struct tcb_s {
     unsigned int reason;           /* which semaphore woke the task up */
     unsigned int sem;              /* semaphore flag */
+		unsigned int priority;				 /*Task Priority*/
     unsigned int *stack_top;       /* top of stack */
     unsigned int *stack_ptr;       /* current stack pointer */
     void *(*task_ptr)(void *);     /* task function pointer */
 } tcb_t;
 
+
 unsigned int os_curr_tid;          /* OS current task ID */
 unsigned int os_sem;               /* OS semaphore flag */
 tcb_t os_tcb[MAX_TASKS];           /* OS task control blocks */
+
+
+/*
+	Will create a new task
+*/
+
+void* newTask(void *(*task_ptr)(void *task),int semCount, int priority)
+{
+	numTasks++;
+	os_tcb[numTasks-1].reason = 0;
+	os_tcb[numTasks-1].sem=0;
+	os_tcb[numTasks-1].priority = priority;
+	os_tcb[numTasks-1].stack_top = STACK_BASE + numTasks*(500);
+	os_tcb[numTasks-1].stack_ptr = STACK_BASE + numTasks*(500);
+	os_tcb[numTasks-1].task_ptr = task_ptr;
+}
+
+
 
 //Prototypes
 void InitConsole(void); //Instructor Provided
