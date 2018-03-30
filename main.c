@@ -27,10 +27,25 @@
 #include "inc/tm4c123gh6pm.h"
 
 //#define FAULT_SYSTICK           15          // System Tick
+#define MAX_TASKS 20
 
+typedef struct tcb_s {
+    unsigned int reason;           /* which semaphore woke the task up */
+    unsigned int sem;              /* semaphore flag */
+    unsigned int *stack_top;       /* top of stack */
+    unsigned int *stack_ptr;       /* current stack pointer */
+    void *(*task_ptr)(void *);     /* task function pointer */
+} tcb_t;
+
+unsigned int os_curr_tid;          /* OS current task ID */
+unsigned int os_sem;               /* OS semaphore flag */
+tcb_t os_tcb[MAX_TASKS];           /* OS task control blocks */
 
 //Prototypes
 void InitConsole(void); //Instructor Provided
+void os_switch(void);
+void os_context_save(tcb_t *tcb);
+void os_context_restore(tcb_t *tcb);
 
 
 //// The delay parameter is in units of the 80 MHz core clock(12.5 ns) 
@@ -102,6 +117,32 @@ int main(void)
     }
 }
 
+
+void os_switch(void)
+{
+   unsigned int tid = MAX_TASKS;
+   unsigned int reason;
+
+   do {
+       reason = os_tcb[--tid].sem & os_sem;
+       if (reason || os_tcb[tid].sem == 0) {
+          os_context_save(&os_tcb[os_curr_tid]);
+          os_curr_tid = tid;
+          os_tcb[os_curr_tid].reason = reason;
+          os_tcb[os_curr_tid].sem &= ~reason;
+          os_sem &= ~reason;
+          os_context_restore(&os_tcb[os_curr_tid]);
+       }
+   } while (tid > 0);
+}
+
+void os_context_save(tcb_t *tcb){
+	tcb->stack_ptr--;
+};
+
+void os_context_restore(tcb_t *tcb){
+	
+};
 
 
 //PROVIDED FUNCTIONS.  NO NEED TO MODIFY
