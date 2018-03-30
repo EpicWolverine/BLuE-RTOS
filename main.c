@@ -47,20 +47,6 @@ unsigned int os_sem;               /* OS semaphore flag */
 tcb_t os_tcb[MAX_TASKS];           /* OS task control blocks */
 
 
-/*
-	Will create a new task
-*/
-
-void* newTask(void *(*task_ptr)(void *task),int semCount, int priority)
-{
-	numTasks++;
-	os_tcb[numTasks-1].reason = 0;
-	os_tcb[numTasks-1].sem=0;
-	os_tcb[numTasks-1].priority = priority;
-	os_tcb[numTasks-1].stack_top = STACK_BASE + numTasks*(500);
-	os_tcb[numTasks-1].stack_ptr = STACK_BASE + numTasks*(500);
-	os_tcb[numTasks-1].task_ptr = task_ptr;
-}
 
 
 
@@ -69,6 +55,7 @@ void InitConsole(void); //Instructor Provided
 void os_switch(void);
 void os_context_save(tcb_t *tcb);
 void os_context_restore(tcb_t *tcb);
+void newTask(void *(*task_ptr)(void *task),int semCount, int priority);
 
 
 //// The delay parameter is in units of the 80 MHz core clock(12.5 ns) 
@@ -116,6 +103,22 @@ void os_context_restore(tcb_t *tcb);
 //	SysTickEnable();
 //	UARTprintf("SysTick initilized.\n");
 //}
+
+
+/*
+	Will create a new task by creating a task control block and populating it with the correct values.
+*/
+
+void newTask(void *(*task_ptr)(void *task),int semCount, int priority)
+{
+	numTasks++;
+	os_tcb[numTasks-1].reason = 0;
+	os_tcb[numTasks-1].sem=0;
+	os_tcb[numTasks-1].priority = priority;
+	os_tcb[numTasks-1].stack_top = STACK_BASE + numTasks*(500);
+	os_tcb[numTasks-1].stack_ptr = STACK_BASE + numTasks*(500);
+	os_tcb[numTasks-1].task_ptr = task_ptr;
+}
 
 
 int main(void)
