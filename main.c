@@ -29,7 +29,6 @@
 //#define FAULT_SYSTICK           15          // System Tick
 #define MAX_TASKS 20
 #define STACK_BASE  0x20000000
-int numTasks=0;
 
 //Global and OS System Types/Functions
 typedef struct tcb_s {
@@ -104,23 +103,6 @@ void newTask(void *(*task_ptr)(void *task),int semCount, int priority);
 //	UARTprintf("SysTick initilized.\n");
 //}
 
-
-/*
-	Will create a new task by creating a task control block and populating it with the correct values.
-*/
-
-void newTask(void *(*task_ptr)(void *task),int semCount, int priority)
-{
-	numTasks++;
-	os_tcb[numTasks-1].reason = 0;
-	os_tcb[numTasks-1].sem=0;
-	os_tcb[numTasks-1].priority = priority;
-	os_tcb[numTasks-1].stack_top = STACK_BASE + numTasks*(500);
-	os_tcb[numTasks-1].stack_ptr = STACK_BASE + numTasks*(500);
-	os_tcb[numTasks-1].task_ptr = task_ptr;
-}
-
-
 int main(void)
 {
     // Set up the serial console to use for displaying messages.  This is just
@@ -164,11 +146,28 @@ void os_switch(void)
 
 void os_context_save(tcb_t *tcb){
 	tcb->stack_ptr--;
+	
 };
 
 void os_context_restore(tcb_t *tcb){
 	
 };
+
+/*
+	Will create a new task by creating a task control block and populating it with the correct values.
+*/
+
+void newTask(void *(*new_task_ptr)(void *task),int semCount, int priority)
+{
+	os_curr_tid++;
+	os_tcb[os_curr_tid-1].reason = 0;
+	os_tcb[os_curr_tid-1].sem= semCount;
+	os_tcb[os_curr_tid-1].priority = priority;
+	os_tcb[os_curr_tid-1].stack_top = (unsigned int *)(STACK_BASE + os_curr_tid*(500));
+	os_tcb[os_curr_tid-1].stack_ptr = (unsigned int *)(STACK_BASE + os_curr_tid*(500));
+	os_tcb[os_curr_tid-1].task_ptr = new_task_ptr;
+}
+
 
 
 //PROVIDED FUNCTIONS.  NO NEED TO MODIFY

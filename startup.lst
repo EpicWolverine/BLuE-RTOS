@@ -69,8 +69,8 @@ ARM Macro Assembler    Page 1
 ARM Macro Assembler    Page 2 
 
 
-   38 00000000 00000400 
-                       Stack   EQU              0x00000400
+   38 00000000 00000500 
+                       Stack   EQU              0x00000500
    39 00000000         
    40 00000000         ;*******************************************************
                        ***********************
@@ -93,16 +93,16 @@ ARM Macro Assembler    Page 2
 =3
    53 00000000         StackMem
    54 00000000                 SPACE            Stack
-   55 00000400         __initial_sp
-   56 00000400         
-   57 00000400         ;*******************************************************
+   55 00000500         __initial_sp
+   56 00000500         
+   57 00000500         ;*******************************************************
                        ***********************
-   58 00000400         ;
-   59 00000400         ; Allocate space for the heap.
-   60 00000400         ;
-   61 00000400         ;*******************************************************
+   58 00000500         ;
+   59 00000500         ; Allocate space for the heap.
+   60 00000500         ;
+   61 00000500         ;*******************************************************
                        ***********************
-   62 00000400                 AREA             HEAP, NOINIT, READWRITE, ALIGN=
+   62 00000500                 AREA             HEAP, NOINIT, READWRITE, ALIGN=
 3
    63 00000000         __heap_base
    64 00000000         HeapMem
@@ -144,7 +144,7 @@ ARM Macro Assembler    Page 3
                        ***********************
    88 00000000                 EXPORT           __Vectors
    89 00000000         __Vectors
-   90 00000000 00000400        DCD              StackMem + Stack ; Top of Stack
+   90 00000000 00000500        DCD              StackMem + Stack ; Top of Stack
                                                             
    91 00000004 00000000        DCD              Reset_Handler ; Reset Handler
    92 00000008 00000000        DCD              NMI_Handler ; NMI Handler
@@ -1083,10 +1083,9 @@ ARM Macro Assembler    Page 17
                        ***********************
   674 0000001C                 END
 Command Line: --debug --xref --cpu=Cortex-M4.fp --apcs=interwork --depend=.\sta
-rtup.d -o.\startup.o -I"D:\Program Files (x86)\Keil\ARM\RV31\INC" -I"D:\Program
- Files (x86)\Keil\ARM\CMSIS\Include" -I"D:\Program Files (x86)\Keil\ARM\Inc\Lum
-inary" --predefine="__EVAL SETA 1" --predefine="__MICROLIB SETA 1" --list=.\sta
-rtup.lst startup.s
+rtup.d -o.\startup.o -IC:\Keil\ARM\RV31\INC -IC:\Keil\ARM\CMSIS\Include -IC:\Ke
+il\ARM\Inc\Luminary --predefine="__EVAL SETA 1" --predefine="__MICROLIB SETA 1"
+ --list=.\startup.lst startup.s
 
 
 
@@ -1109,7 +1108,7 @@ Symbol: StackMem
    Uses
       At line 90 in file startup.s
 Comment: StackMem used once
-__initial_sp 00000400
+__initial_sp 00000500
 
 Symbol: __initial_sp
    Definitions
@@ -2487,7 +2486,7 @@ Symbol: Heap
    Uses
       At line 65 in file startup.s
 Comment: Heap used once
-Stack 00000400
+Stack 00000500
 
 Symbol: Stack
    Definitions
