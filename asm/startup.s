@@ -35,7 +35,7 @@
 ; <o> Stack Size (in Bytes) <0x0-0xFFFFFFFF:8>
 ;
 ;******************************************************************************
-Stack   EQU     0x00000500
+Stack   EQU     0x00000400
 
 ;******************************************************************************
 ;
@@ -85,7 +85,8 @@ __heap_limit
 ; The vector table.
 ;
 ;******************************************************************************
-        EXPORT  __Vectors
+        EXTERN  PendSV_Handler
+		EXPORT  __Vectors
 __Vectors
         DCD     StackMem + Stack            ; Top of Stack
         DCD     Reset_Handler               ; Reset Handler
@@ -275,7 +276,6 @@ Reset_Handler
         ;
         IMPORT  __main
         B       __main
-
 ;******************************************************************************
 ;
 ; This is the code that gets called when the processor receives a NMI.  This
@@ -323,10 +323,6 @@ SVC_Handler     PROC
 DebugMon_Handler\
                 PROC
                 EXPORT  DebugMon_Handler          [WEAK]
-                B       .
-                ENDP
-PendSV_Handler  PROC
-                EXPORT  PendSV_Handler            [WEAK]
                 B       .
                 ENDP
 SysTick_Handler PROC
@@ -576,65 +572,6 @@ PWM1Fault_Handler
 ;
 ;******************************************************************************
         ALIGN
-
-;******************************************************************************
-;
-; Some code in the normal code section for initializing the heap and stack.
-;
-;******************************************************************************
-        AREA    |.text|, CODE, READONLY
-
-;******************************************************************************
-;
-; Useful functions.
-;
-;******************************************************************************
-        EXPORT  DisableInterrupts
-        EXPORT  EnableInterrupts
-        EXPORT  StartCritical
-        EXPORT  EndCritical
-        EXPORT  WaitForInterrupt
-
-;*********** DisableInterrupts ***************
-; disable interrupts
-; inputs:  none
-; outputs: none
-DisableInterrupts
-        CPSID  I
-        BX     LR
-
-;*********** EnableInterrupts ***************
-; disable interrupts
-; inputs:  none
-; outputs: none
-EnableInterrupts
-        CPSIE  I
-        BX     LR
-
-;*********** StartCritical ************************
-; make a copy of previous I bit, disable interrupts
-; inputs:  none
-; outputs: previous I bit
-StartCritical
-        MRS    R0, PRIMASK  ; save old status
-        CPSID  I            ; mask all (except faults)
-        BX     LR
-
-;*********** EndCritical ************************
-; using the copy of previous I bit, restore I bit to previous value
-; inputs:  previous I bit
-; outputs: none
-EndCritical
-        MSR    PRIMASK, R0
-        BX     LR
-
-;*********** WaitForInterrupt ************************
-; go to low power mode while waiting for the next interrupt
-; inputs:  none
-; outputs: none
-WaitForInterrupt
-        WFI
-        BX     LR
 
 ;******************************************************************************
 ;

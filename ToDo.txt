@@ -1,0 +1,3 @@
+Setup A Proper Schedular.
+
+Modify tasks to allow for deleting and adding more
