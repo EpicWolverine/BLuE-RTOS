@@ -1,0 +1,2 @@
+Maybe Allow for deletion of Tasks or changing of priorites
+Applying interrupts priorities/implimenting interrupts //might not be needed check ti library
