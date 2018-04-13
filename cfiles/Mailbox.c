@@ -73,12 +73,12 @@ void CreateMailbox(Mailbox * MBox)
 	MBox->Read = &(MBox->Buffer[0]);
 }
 
-static unsigned short IsEmpty(Mailbox * MBox)
+unsigned short IsEmpty(Mailbox * MBox)
 {
 	if(MBox->Write == MBox->Read)return 1;	//Empty, Pointing to the same address
 	return 0;																//Not empty
 }
-static unsigned short IsFull(Mailbox * MBox)
+unsigned short IsFull(Mailbox * MBox)
 {
 	void * temp;
 	temp = (MBox->Write + 1);								//Looks at the Next Address

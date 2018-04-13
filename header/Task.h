@@ -17,6 +17,7 @@ typedef struct Functions{
 	Sema * Semaphore;
 	Flag * EventFlag;
 	Mailbox * MailBox;
+	unsigned int TaskSwitches;
 }Tasks;
 
 void AddFunc(void(*)(),int);

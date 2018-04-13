@@ -7,7 +7,7 @@ unsigned int RunningNum;	//Number of the running task
 
 static unsigned int CSFlags;
 static unsigned int TaskStacks[MaxTasks][StackSize];
-static volatile unsigned int Ticks = 0;
+volatile unsigned int Ticks = 0;
 static unsigned int * SchedulerSP;
 static unsigned short Mode;
 
@@ -55,8 +55,8 @@ void Switcher()
 	if(Mode == 0)
 	{//Schedular to Task
 		SchedulerSP = CurrentStackPointer;
-		TaskBlocks[RunningNum].switches++;
 		CurrentStackPointer = TaskBlocks[RunningNum].SP;
+		TaskBlocks[RunningNum].TaskSwitches++;
 		Mode = 1;
 	}
 	else
@@ -76,6 +76,7 @@ void AddFunc(void(*Func)(),int Prio)
 	TaskBlocks[TaskNum].Blocked = 0;
 	TaskBlocks[TaskNum].Semaphore = 0;
 	TaskBlocks[TaskNum].EventFlag = 0;
+	TaskBlocks[TaskNum].TaskSwitches = 0;
 	Temp = &TaskStacks[TaskNum][StackSize-1]; //set the stack point to the very bottom of the stack
 	/*Post Decriment used to point to a blank address while Initalizing the stack with temp values.
 		The Stack get filled in this order and gets poped in the reverse when a context switch is called

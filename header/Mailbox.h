@@ -9,5 +9,5 @@ void CreateMailbox(Mailbox *);
 void * PendMailbox(Mailbox *);
 void * AcceptMailbox(Mailbox *,unsigned short * error);
 unsigned short PostMailbox(Mailbox *,void * mail);
-static unsigned short IsEmpty(Mailbox *);
-static unsigned short IsFull(Mailbox *);
+unsigned short IsEmpty(Mailbox *);
+unsigned short IsFull(Mailbox *);

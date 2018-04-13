@@ -57,3 +57,7 @@ dkms.conf
 *.bak
 *.Brendan
 *.lnp
+
+Build/
+*.dep
+*.uvopt
