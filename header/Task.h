@@ -1,12 +1,12 @@
+#include "OSConfig.h"
 #include "Semaphore.h"
 #include "Flags.h"
 #include "Mailbox.h"
 
-#define MaxTasks 10
-#define StackSize 100 //Each Slot Stores 4 Bytes
 //Used for Context Switching
-#define PendSV (unsigned int *)0xE000ED04
-#define ContextSwitch() { *PendSV = 0x10000000;}
+#define PendSV (unsigned int *)0xE000ED04		//Register for causing Handler Fault
+#define ContextSwitch() { *PendSV = 0x10000000;}//Sets the bit to casue a Fault
+//Can only see the fault in debugging when running Not stepping the debugger.
 
 typedef struct Functions{
 	unsigned int Priority;
@@ -17,14 +17,12 @@ typedef struct Functions{
 	Sema * Semaphore;
 	Flag * EventFlag;
 	Mailbox * MailBox;
-	//MailBox * MBox or something like it.
 }Tasks;
 
 void AddFunc(void(*)(),int);
 void Scheduler(void);
 void Switcher(void);
 void StartRTOS(void);
-void SetupIdle(void);
 void TaskDelay(unsigned int);
 void EnterCS(void);
 void ExitCS(void);

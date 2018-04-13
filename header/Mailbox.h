@@ -1,8 +1,8 @@
-#define Buffersize 4
+#include "OSConfig.h"
 typedef struct{
-	void ** Write;						//pointer to void pointer in array
+	void ** Write;				//pointer to void pointer in array
 	void ** Read;
-	void * Buffer[Buffersize];
+	void * Buffer[MailBufferSize];
 }Mailbox;
 
 void CreateMailbox(Mailbox *);

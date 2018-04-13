@@ -31,5 +31,5 @@ typedef volatile unsigned int CReg32;
 void Button_Init(void);
 void Led_Init(void);
 void Gen_Init(void);
-void Systick_Init(void(*FuncPtr)(),unsigned int TicksPerSec);
+void Systick_Init(unsigned int TicksPerSec);
 void InitConsole(unsigned int Baud);
