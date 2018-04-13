@@ -10,16 +10,17 @@ extern unsigned int TaskNum;	//Total number of tasks created
 extern volatile unsigned int Ticks;
 
 //Prototypes For tasks
-static void FuncRed(void);
-static void FuncBlue(void);
-static void FuncGreen(void);
-static void FuncButton(void);
+static void UpdateBlinkRate(void);
+static void Blinky1(void);
+static void Blinky2(void);
+static void HeartBeat(void);
+static void SerialTerm(void);
 static void Monitor(void);
 
 //Globals For Sema, Flags, Mailbox, ect...
 Sema MySema;
 Flag MyFlag;
-Mailbox MyBox;
+Mailbox MyBox[2];
 unsigned int delay = 1;
 
 
@@ -37,72 +38,112 @@ int main(void)
 		//Initalize Semaphores, Flags, and Mailboxes
 		CreateSema(&MySema,1);
 		CreateFlag(&MyFlag,0x1|0x2);//Create Flag for 1 and 2
-		CreateMailbox(&MyBox);
-
+		CreateMailbox(&MyBox[0]);
+		CreateMailbox(&MyBox[1]);
+	
 		//Add Functions to the RTOS, inputs are Function Address and Priority with 0 being the Highest
-		AddFunc(FuncRed,1);
-		AddFunc(FuncBlue,2);
-		AddFunc(FuncGreen,3);
-		AddFunc(FuncButton,~0);
+		AddFunc(UpdateBlinkRate,1);
+		AddFunc(Blinky1,2);
+		AddFunc(Blinky2,3);
+		AddFunc(HeartBeat,100);
+		AddFunc(SerialTerm,50);
 		AddFunc(Monitor,4);
-		
 		///Start Running the Tasks
 		StartRTOS();
 }
 
-void FuncButton(void)
+static void UpdateBlinkRate(void)
 {
 	int32_t test;
-	while(1)
-	{
-		test = GPIOPinRead(GPIO_PORTF_BASE,0x11);
-		if(test == 0x00)delay++;//sw2
-//		if(test == 0x01)delay--;//sw1
-		if(delay < 2) delay++;
-		TaskDelay(4);
+    while (1) {
+			test = GPIOPinRead(GPIO_PORTF_BASE,0x11);
+			if((test&0x11) == 0x00) PostFlag(&MyFlag,0x3);
+			if((test&0x11) == 0x01) PostFlag(&MyFlag,0x2);
+			if((test&0x11) == 0x10) PostFlag(&MyFlag,0x1);
+			TaskDelay(100);
+			}
+}
+
+static void Blinky1(void)
+{
+		int32_t Delay = 300;
+		int32_t error;
+		int32_t test;
+
+    while (1) {
+				error = AcceptFlag(&MyFlag,0x1,0x1);
+				if(error == 0)
+				{
+					Delay = 15+(Delay*1337)%1000;
+					PostMailbox(&MyBox[0],(void*)Delay);
+				}
+        test = GPIOPinRead(GPIO_PORTF_BASE,0xE);
+				test ^= 0x2;
+				GPIOPinWrite(GPIO_PORTF_BASE,0xE,test);
+        TaskDelay(Delay);
+			}
+}
+
+static void Blinky2(void)
+{
+		int32_t Delay = 300;
+		int32_t error;
+		int32_t test;
+
+    while (1) {
+				error = AcceptFlag(&MyFlag,0x2,0x1);
+				if(error == 0)
+				{
+					Delay = 20+(Delay*1337)%1000;
+					PostMailbox(&MyBox[1],(void*)Delay);
+				}
+        test = GPIOPinRead(GPIO_PORTF_BASE,0xE);
+				test ^= 0x4;
+				GPIOPinWrite(GPIO_PORTF_BASE,0xE,test);
+        TaskDelay(Delay);
+			}
+}
+
+static void HeartBeat(void){
+	while (1) {
+		PendSema(&MySema);
+		UARTprintf("Pulse \n");
+		PostSema(&MySema);
+		TaskDelay(500);
 	}
 }
 
-void FuncRed(void)
-{
-	int32_t test;
-	while(1)
-	{
-		test = GPIOPinRead(GPIO_PORTF_BASE,14);
-		GPIOPinWrite(GPIO_PORTF_BASE,0xE,test^2);
-		TaskDelay(1);
-		test = GPIOPinRead(GPIO_PORTF_BASE,14);
-		GPIOPinWrite(GPIO_PORTF_BASE,0xE,test^2);
-		TaskDelay(delay);
-	}
-}
-void FuncBlue(void)
-{
-	int32_t test;
-	while(1)
-	{
-		test = GPIOPinRead(GPIO_PORTF_BASE,14);
-		GPIOPinWrite(GPIO_PORTF_BASE,0xE,test^4);
-		TaskDelay(1);
-		test = GPIOPinRead(GPIO_PORTF_BASE,14);
-		GPIOPinWrite(GPIO_PORTF_BASE,0xE,test^4);
-		TaskDelay(delay);
-	}
-}
-void FuncGreen(void)
-{
-	int32_t test;
-	while(1)
-	{
-		test = GPIOPinRead(GPIO_PORTF_BASE,14);
-		GPIOPinWrite(GPIO_PORTF_BASE,0xE,test^8);
-		TaskDelay(1);
-		test = GPIOPinRead(GPIO_PORTF_BASE,14);
-		GPIOPinWrite(GPIO_PORTF_BASE,0xE,test^8);
-		TaskDelay(delay);
-	}
-}
-
+static	void	SerialTerm(void){
+		unsigned short error;
+		int32_t Delay[2] = {0,0};
+		
+	
+    while (1) {
+				Delay[0] = (int32_t)AcceptMailbox(&MyBox[0],&error);
+				Delay[1] = (int32_t)AcceptMailbox(&MyBox[1],&error);
+				if(Delay[0] != 0)	{
+					PendSema(&MySema);
+					UARTprintf("Blinky1 %d\n",Delay[0]);
+					PostSema(&MySema);
+				}
+				if(Delay[1] != 0)	{
+					PendSema(&MySema);
+					UARTprintf("Blinky2 %d\n",Delay[1]);
+					PostSema(&MySema);
+				}
+				if(Delay[0]==0 && Delay[1]==0)
+				{
+					PendSema(&MySema);
+					//UARTprintf("\x1b[2J");
+					UARTprintf("OSCPUUsage: %d\n",100);
+					UARTprintf("OSCtxSwCtr: %d\n",69);
+					UARTprintf("OSIdleCtr: %d\n",000);
+					//UARTprintf("OSTCBCtxSwCtr: %d\n\n\n\n",OSTCBCtxSwCtr);
+					PostSema(&MySema);
+					
+				}
+				TaskDelay(1000);
+			}
 void Monitor(void){
 	int32_t i;
 	while(1){
