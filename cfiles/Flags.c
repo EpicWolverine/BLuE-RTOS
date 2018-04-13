@@ -14,13 +14,14 @@ unsigned int PendFlag(Flag * EventFlag,unsigned int Mask,unsigned short Consume)
 		ExitCS();
 		return 404;//If Bits are not all enabled Error
 	}
-	while(EventFlag->FlagValue != Mask)					//Loop while Flag not set
+	//check to see if the flags are set for the Mask
+	while((EventFlag->FlagValue & Mask) != Mask)		//Loop while Flag not set
 	{
-		TaskBlocks[RunningNum].Blocked |= 0x2;			//second bit is for flags
+		TaskBlocks[RunningNum].Blocked |= 0x2;				//Set Flag Blocking Bit
 		TaskBlocks[RunningNum].EventFlag = EventFlag;	//Set the address of the blocking flag
-		ExitCS();										//Don't needed to worry of shared data anymore
-		ContextSwitch();								//Change Task
-		EnterCS();										//Start Critical Again when returned.
+		ExitCS();																			//Don't needed to worry of shared data anymore
+		ContextSwitch();															//Change Task
+		EnterCS();																		//Start Critical Again when returned.
 	}
 	if(Consume == 1)
 	{
@@ -29,6 +30,7 @@ unsigned int PendFlag(Flag * EventFlag,unsigned int Mask,unsigned short Consume)
 	ExitCS();
 	return 0;
 }
+
 unsigned int AcceptFlag(Flag * EventFlag,unsigned int Mask,unsigned short Consume)
 {
 	EnterCS();
@@ -37,17 +39,17 @@ unsigned int AcceptFlag(Flag * EventFlag,unsigned int Mask,unsigned short Consum
 		ExitCS();
 		return 404;//If Bits are not all enabled Error
 	}
-	if(EventFlag->FlagValue != Mask)//If Flag is not Set
+	if((EventFlag->FlagValue & Mask) != Mask)//If Flag is not Set
 	{
 		ExitCS();
-		return 1;
+		return 1;	//Flag not set error
 	}
 	if(Consume == 1)
 	{
 		EventFlag->FlagValue &= ~Mask; //Clear the flag values
 	}
 	ExitCS();
-	return 0;
+	return 0;	//No error
 }
 unsigned int PostFlag(Flag * EventFlag,unsigned int Mask)
 {
@@ -58,12 +60,12 @@ unsigned int PostFlag(Flag * EventFlag,unsigned int Mask)
 		ExitCS();
 		return 404;//If Bits are not all enabled Error
 	}
-	EventFlag->FlagValue |= Mask;	//Set Flags
-	for(i=0;i<TaskNum;i++) //unblock functions that use this flag, doesn't check if flag has been set
+	EventFlag->FlagValue |= Mask;							//Set Flags
+	for(i=0;i<TaskNum;i++) 										//unblock functions that use this flag
 	{
-		if(TaskBlocks[i].EventFlag == EventFlag)	//Current Blocked flag is Same Flag
+		if(TaskBlocks[i].EventFlag == EventFlag)//Check if blocking flag is the same as set flag
 		{
-			TaskBlocks[i].Blocked &= ~0x2;			//Unblock Tasks that are relying on flag
+			TaskBlocks[i].Blocked &= ~0x2;				//Unblock Tasks that are relying on this flag
 		}
 	}
 	ExitCS();
@@ -71,6 +73,6 @@ unsigned int PostFlag(Flag * EventFlag,unsigned int Mask)
 }
 void CreateFlag(Flag * EventFlag,unsigned int Mask)
 {
-	EventFlag->BitEnabled = Mask;
-	EventFlag->FlagValue = 0x0;
+	EventFlag->BitEnabled = Mask; 						//Enable the bits
+	EventFlag->FlagValue = 0x0;								//Clear All Flags
 }

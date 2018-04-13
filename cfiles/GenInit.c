@@ -1,4 +1,6 @@
 #include "../header/GenInit.h"
+#include "../header/OSConfig.h"
+#include "../header/Task.h"
 
 void Button_Init(){
 	CReg32 * R0;
@@ -72,16 +74,17 @@ void Gen_Init()		//Calls Both Functions
 	Led_Init();
 }
 
-void Systick_Init(void(*FuncPtr)(),unsigned int TicksPerSec)
+void Systick_Init(unsigned int TicksPerSec)
 {
 	SysTickEnable();							//Enable Systick
-	SysTickIntRegister(FuncPtr);	//Enable interrupt function
+	SysTickIntRegister(Ticker);		//Enable interrupt function
 	SysTickIntEnable(); 					//Enable interrupt
 	SysTickPeriodSet(SysCtlClockGet()/TicksPerSec); //Set The Interrupt Rate for Systick
 }
 
 void InitConsole(unsigned int Baud)
 {
+		//Sets up the UART for PortA/The USB Connection
     SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOA);
     GPIOPinConfigure(GPIO_PA1_U0TX);
     SysCtlPeripheralEnable(SYSCTL_PERIPH_UART0);
