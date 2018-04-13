@@ -55,12 +55,14 @@ void Switcher()
 	if(Mode == 0)
 	{//Schedular to Task
 		SchedulerSP = CurrentStackPointer;
+		TaskBlocks[RunningNum].switches++;
 		CurrentStackPointer = TaskBlocks[RunningNum].SP;
 		Mode = 1;
 	}
 	else
 	{//Tasks to Schedular
 		TaskBlocks[RunningNum].SP = CurrentStackPointer;
+		TaskBlocks[RunningNum].switches++;
 		CurrentStackPointer = SchedulerSP;
 		Mode = 0;
 	}
