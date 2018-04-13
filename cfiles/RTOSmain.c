@@ -47,7 +47,6 @@ int main(void)
 		AddFunc(Blinky2,3);
 		AddFunc(HeartBeat,100);
 		AddFunc(SerialTerm,50);
-		AddFunc(Monitor,4);
 		///Start Running the Tasks
 		StartRTOS();
 }
@@ -114,64 +113,60 @@ static void HeartBeat(void){
 }
 
 static	void	SerialTerm(void){
-		unsigned short error;
-		int32_t Delay[2] = {0,0};
-		
+	unsigned short error;
+	int32_t Delay[2] = {0,0};
 	
-    while (1) {
-				Delay[0] = (int32_t)AcceptMailbox(&MyBox[0],&error);
-				Delay[1] = (int32_t)AcceptMailbox(&MyBox[1],&error);
-				if(Delay[0] != 0)	{
-					PendSema(&MySema);
-					UARTprintf("Blinky1 %d\n",Delay[0]);
-					PostSema(&MySema);
-				}
-				if(Delay[1] != 0)	{
-					PendSema(&MySema);
-					UARTprintf("Blinky2 %d\n",Delay[1]);
-					PostSema(&MySema);
-				}
-				if(Delay[0]==0 && Delay[1]==0)
-				{
-					PendSema(&MySema);
-					//UARTprintf("\x1b[2J");
-					UARTprintf("OSCPUUsage: %d\n",100);
-					UARTprintf("OSCtxSwCtr: %d\n",69);
-					UARTprintf("OSIdleCtr: %d\n",000);
-					//UARTprintf("OSTCBCtxSwCtr: %d\n\n\n\n",OSTCBCtxSwCtr);
-					PostSema(&MySema);
-					
-				}
-				TaskDelay(1000);
-			}
-void Monitor(void){
-	int32_t i;
-	while(1){
-		UARTprintf("\x1b[2J");
-		UARTprintf("                            BLuE RTOS top\n");
-		UARTprintf("System Time: %10u\n", Ticks);
-		//Priority,Delay,Semaphore,EventFlag,MailBox
-		UARTprintf("|------------------------------------------------------------------|\n");
-		UARTprintf("|Task #| Priority |Task Delay|Switches|Semaphore|Event Flag|Mailbox|\n");
-		UARTprintf("|------------------------------------------------------------------|\n");
-		for(i=0; i < TaskNum; i++){
-			UARTprintf("|Task %u|%10u|%10u|%8u| %8X|  %8X|", 
-				i, TaskBlocks[i].Priority, TaskBlocks[i].Delay, TaskBlocks[i].TaskSwitches, 
-				TaskBlocks[i].Semaphore, TaskBlocks[i].EventFlag);
-			if(IsEmpty(TaskBlocks[i].MailBox) == 1){
-				UARTprintf("  empty");
-			}
-			else if(IsFull(TaskBlocks[i].MailBox) == 1){
-				UARTprintf("   full");
-			}
-			else{
-				UARTprintf("       ");
-			}
-			UARTprintf("|\n");
+
+	while (1) {
+		Delay[0] = (int32_t)AcceptMailbox(&MyBox[0],&error);
+		Delay[1] = (int32_t)AcceptMailbox(&MyBox[1],&error);
+		if(Delay[0] != 0)	{
+			PendSema(&MySema);
+			UARTprintf("Blinky1 %d\n",Delay[0]);
+			PostSema(&MySema);
 		}
-		for(i=TaskNum; i < MaxTasks; i++){
-			UARTprintf("\n");
+		if(Delay[1] != 0)	{
+			PendSema(&MySema);
+			UARTprintf("Blinky2 %d\n",Delay[1]);
+			PostSema(&MySema);
+		}
+		if(Delay[0]==0 && Delay[1]==0)
+		{
+			PendSema(&MySema);
+			//UARTprintf("\x1b[2J");
+			Monitor();
+			//UARTprintf("OSTCBCtxSwCtr: %d\n\n\n\n",OSTCBCtxSwCtr);
+			PostSema(&MySema);
+			
 		}
 		TaskDelay(1000);
+	}
+}
+void Monitor(void){
+	int32_t i;
+//	UARTprintf("\x1b[2J");
+	UARTprintf("                            BLuE RTOS top\n");
+	UARTprintf("System Time: %10u\n", Ticks);
+	//Priority,Delay,Semaphore,EventFlag,MailBox
+	UARTprintf("|------------------------------------------------------------------|\n");
+	UARTprintf("|Task #| Priority |Task Delay|Switches|Semaphore|Event Flag|Mailbox|\n");
+	UARTprintf("|------------------------------------------------------------------|\n");
+	for(i=0; i < TaskNum; i++){
+		UARTprintf("|Task %u|%10u|%10u|%8u| %8X|  %8X|", 
+			i, TaskBlocks[i].Priority, TaskBlocks[i].Delay, TaskBlocks[i].TaskSwitches, 
+			TaskBlocks[i].Semaphore, TaskBlocks[i].EventFlag);
+		if(IsEmpty(TaskBlocks[i].MailBox) == 1){
+			UARTprintf("  empty");
+		}
+		else if(IsFull(TaskBlocks[i].MailBox) == 1){
+			UARTprintf("   full");
+		}
+		else{
+			UARTprintf("       ");
+		}
+		UARTprintf("|\n");
+	}
+	for(i=TaskNum; i < MaxTasks; i++){
+		UARTprintf("\n");
 	}
 }
