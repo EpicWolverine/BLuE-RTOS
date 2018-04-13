@@ -62,7 +62,6 @@ void Switcher()
 	else
 	{//Tasks to Schedular
 		TaskBlocks[RunningNum].SP = CurrentStackPointer;
-		TaskBlocks[RunningNum].switches++;
 		CurrentStackPointer = SchedulerSP;
 		Mode = 0;
 	}
